@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:lefon/provider/favorite_model.dart';
-import 'package:lefon/screens/genres_screen.dart';
-import 'package:lefon/widgets/audio_cover.dart';
+import 'package:lefon/provider/border_model.dart';
+import 'package:lefon/provider/voice_model.dart';
+import 'package:lefon/widgets/book_list.dart';
+import 'package:lefon/widgets/categories.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
+import '../screens/player_screen.dart';
 import '../models/audio_data.dart';
-import '../models/genre_data.dart';
+import '../provider/border_model.dart';
+import '../screens/genres_screen.dart';
+import '../widgets/border_widget.dart';
 
 enum Genre { Drama, Action, SciFi, Horror, Comedy }
 
@@ -15,130 +19,178 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-Widget text(text, topPadding) {
-  return Container(
-    padding: EdgeInsets.only(top: topPadding, left: 30),
-    alignment: Alignment.topLeft,
-    child: Text(
-      text,
-      style: TextStyle(
-          color: Colors.black, fontWeight: FontWeight.bold, fontSize: 24),
-    ),
+Widget text(text) {
+  return Text(
+    text,
+    style: TextStyle(
+        color: Colors.black, fontWeight: FontWeight.bold, fontSize: 24),
   );
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   Genre genre;
+  DragStartDetails startSwipe;
+  DragUpdateDetails updateSwipe;
+  bool left;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ChangeNotifierProvider(
-        create: (context) => FavoriteModel(),
-        // child: SingleChildScrollView(
-        //   scrollDirection: Axis.vertical,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            text("A-Z", 30.0),
-            bookList(MediaQuery.of(context).size.height * 0.14, true),
-            text("Featured", 0.0),
-            bookList(MediaQuery.of(context).size.height * 0.23, false),
-            // Consumer<FavoriteModel>(
-            //   builder: (context, fav, child) {
-            //     return fav.isFav ? text("Favorites", 10.0) : SizedBox();
-            //   },
-            // ),
-            // Consumer<FavoriteModel>(
-            //   builder: (context, fav, child) {
-            //     return fav.isFav
-            //         ? bookList(MediaQuery.of(context).size.height * 0.23, false)
-            //         : SizedBox();
-            //   },
-            // ),
-            text("Categories", 0.0),
-            genres(),
-          ],
-        ),
-        //  ),
-      ),
-    );
-  }
-
-  Widget bookList(height, isShadow) {
-    return Container(
-      padding: EdgeInsets.only(left: 10, right: 10),
-      height: height + MediaQuery.of(context).size.height * 0.1,
-      child: Expanded(
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          children: List.generate(5, (int index) {
-            return Column(
-              children: [
-                AudioCover(
-                  title: audioData[index].title,
-                  author: audioData[index].author,
-                  cover: audioData[index].cover,
-                  url: audioData[index].url,
-                  height: height,
-                  witdh: MediaQuery.of(context).size.height * 0.17,
-                  isShadow: isShadow,
-                  isClickable: true,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 10.0),
-                  child: Text(
-                    audioData[index].title,
+      body: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => VoiceModel()),
+          ChangeNotifierProvider(create: (_) => BorderModel()),
+        ],
+        child: Consumer<BorderModel>(
+          builder: (context, border, child) => GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(top: 30, left: 30),
+                    alignment: Alignment.topLeft,
+                    child: border.counterName == 1
+                        ? BorderWidget(child: text("A-Z"), isBordered: true)
+                        : BorderWidget(child: text("A-Z"), isBordered: false),
                   ),
-                ),
-                Text(
-                  audioData[index].author,
-                  style: TextStyle(color: Colors.black38),
-                ),
-              ],
-            );
-          }),
-        ),
-      ),
-    );
-  }
-
-  Widget genres() {
-    return Container(
-      padding: EdgeInsets.only(left: 10, right: 10, bottom: 10),
-      height: MediaQuery.of(context).size.height * 0.1,
-      child: Expanded(
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          children: List.generate(5, (int index) {
-            return GestureDetector(
-              onTap: () {
-                Navigator.of(context)
-                    .pushNamed(GenresScreen.routeName, arguments: {
-                  'index': index,
-                });
-              },
-              child: Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                  border.counterAz > -1
+                      ? BookList(
+                          height: MediaQuery.of(context).size.height * 0.14,
+                          isShadow: true,
+                          replaceIndex: border.counterAz,
+                        )
+                      : BookList(
+                          height: MediaQuery.of(context).size.height * 0.14,
+                          isShadow: true,
+                          replaceIndex: null,
+                        ),
+                  Container(
+                    padding: EdgeInsets.only(left: 30),
+                    alignment: Alignment.topLeft,
+                    child: border.counterName == 2
+                        ? BorderWidget(
+                            child: text("Featured"), isBordered: true)
+                        : BorderWidget(
+                            child: text("Featured"), isBordered: false),
                   ),
-                  child: Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
-                          gradient: LinearGradient(colors: [
-                            Theme.of(context).primaryColor,
-                            Theme.of(context).accentColor,
-                          ])),
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      height: MediaQuery.of(context).size.height * 0.1,
-                      child: Center(
-                          child: Text(
-                              "${genreData[index].genre.toString().split('.').last}",
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.white,
-                              ))))),
-            );
-          }),
+                  border.counterFeatured > -1
+                      ? BookList(
+                          height: MediaQuery.of(context).size.height * 0.23,
+                          isShadow: false,
+                          replaceIndex: border.counterFeatured,
+                        )
+                      : BookList(
+                          height: MediaQuery.of(context).size.height * 0.23,
+                          isShadow: false,
+                          replaceIndex: null,
+                        ),
+                  Container(
+                      padding: EdgeInsets.only(left: 30),
+                      alignment: Alignment.topLeft,
+                      child: border.counterName == 3
+                          ? BorderWidget(
+                              child: text("Categories"), isBordered: true)
+                          : BorderWidget(
+                              child: text("Categories"), isBordered: false)),
+                  border.counterCategory > -1
+                      ? Categories(
+                          replaceIndex: border.counterCategory,
+                        )
+                      : Categories(
+                          replaceIndex: null,
+                        ),
+                ]),
+            onVerticalDragUpdate: (swipe) {
+              if (swipe.delta.dy < 0)
+                left = true;
+              else if (swipe.delta.dy > 0) left = false;
+            },
+            onVerticalDragEnd: (swipe) {
+              if (left) {
+                if (border.swipeNames)
+                  border.decreaseCounter(Counters.Name);
+                else if (border.swipeAz)
+                  border.decreaseCounter(Counters.Az);
+                else if (border.swipeFeatured)
+                  border.decreaseCounter(Counters.Featured);
+                else if (border.swipeCategory)
+                  border.decreaseCounter(Counters.Category);
+              } else {
+                if (border.swipeNames)
+                  border.increaseCounter(Counters.Name);
+                else if (border.swipeAz)
+                  border.increaseCounter(Counters.Az);
+                else if (border.swipeFeatured)
+                  border.increaseCounter(Counters.Featured);
+                else if (border.swipeCategory)
+                  border.increaseCounter(Counters.Category);
+              }
+            },
+            onDoubleTap: () {
+              print("double tap");
+              if (border.counterAz > -1) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (BuildContext context) {
+                      return PlayerScreen(
+                        title: audioData[border.counterAz].title,
+                        author: audioData[border.counterAz].author,
+                        cover: audioData[border.counterAz].cover,
+                        url: audioData[border.counterAz].url,
+                      );
+                    },
+                  ),
+                );
+              } else if (border.counterFeatured > -1) {
+                Navigator.of(context).push(MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (BuildContext context) {
+                      return PlayerScreen(
+                        title: audioData[border.counterFeatured].title,
+                        author: audioData[border.counterFeatured].author,
+                        cover: audioData[border.counterFeatured].cover,
+                        url: audioData[border.counterFeatured].url,
+                      );
+                    }));
+              } else if (border.counterCategory > -1) {
+                Navigator.of(context).pushNamed(GenresScreen.routeName,
+                    arguments: {'index': border.counterCategory});
+              } else {
+                switch (border.counterName) {
+                  case 1:
+                    border.setSwipes(Counters.Name, false);
+                    border.setSwipes(Counters.Az, true);
+                    border.setSwipes(Counters.Featured, false);
+                    border.setSwipes(Counters.Category, false);
+                    break;
+                  case 2:
+                    border.setSwipes(Counters.Name, false);
+                    border.setSwipes(Counters.Featured, true);
+                    border.setSwipes(Counters.Az, false);
+                    border.setSwipes(Counters.Category, false);
+                    break;
+                  case 3:
+                    border.setSwipes(Counters.Name, false);
+                    border.setSwipes(Counters.Category, true);
+                    border.setSwipes(Counters.Az, false);
+                    border.setSwipes(Counters.Featured, false);
+                    break;
+                  default:
+                    break;
+                }
+              }
+            },
+            onLongPress: () {
+              print("long tap");
+              border.resetCounter(Counters.Az);
+              border.resetCounter(Counters.Name);
+              border.resetCounter(Counters.Featured);
+              border.resetCounter(Counters.Category);
+              border.setSwipes(Counters.Name, true);
+            },
+          ),
         ),
       ),
     );

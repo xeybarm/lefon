@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lefon/screens/genres_screen.dart';
 import 'package:lefon/screens/home_screen.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(Lefon());
@@ -14,6 +15,10 @@ class Lefon extends StatefulWidget {
 class _LefonState extends State<Lefon> {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return MaterialApp(
       title: 'Lefon',
       theme: ThemeData(

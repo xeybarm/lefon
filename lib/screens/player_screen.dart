@@ -34,6 +34,8 @@ showToast(context) {
 
 class _PlayerScreenState extends State<PlayerScreen> {
   bool left;
+  bool down;
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -54,18 +56,23 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   mainTab(audio, fav),
                 ],
               ),
-              onDoubleTap: () {
+              onTap: () {
                 if (audio.isOn) {
                   audio.pauseAudio();
                 } else {
                   audio.playAudio(widget.url);
                 }
               },
-              onVerticalDragEnd: (swipe) {
-                fav.changeFavStatus();
+              onVerticalDragUpdate: (swipe) {
+                if (swipe.delta.dy > 0)
+                  down = true;
+                else if (swipe.delta.dy < 0) down = false;
               },
-              onLongPress: () {
-                closePlayer(context, audio);
+              onVerticalDragEnd: (swipe) {
+                if (down) closePlayer(context, audio);
+              },
+              onDoubleTap: () {
+                fav.changeFavStatus();
               },
               onHorizontalDragUpdate: (swipe) {
                 if (swipe.delta.dx < 0)
@@ -74,9 +81,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
               },
               onHorizontalDragEnd: (swipe) {
                 if (left)
-                  audio.reverse10Sec(audio.currentDuration);
+                  audio.reverse5Sec(audio.currentDuration);
                 else
-                  audio.forward10Sec(audio.currentDuration);
+                  audio.forward5Sec(audio.currentDuration);
               },
             ),
           ),
@@ -129,21 +136,20 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     height: MediaQuery.of(context).size.height * 0.5,
                     witdh: MediaQuery.of(context).size.width * 0.9,
                     isShadow: true,
-                    isClickable: false,
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     widget.title,
-                    style: TextStyle(fontSize: 18, color: Colors.black),
+                    style: TextStyle(fontSize: 19, color: Colors.black),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 5),
                   child: Text(
                     widget.author,
-                    style: TextStyle(fontSize: 12, color: Colors.black38),
+                    style: TextStyle(fontSize: 15, color: Colors.black38),
                   ),
                 )
               ],

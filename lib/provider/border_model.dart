@@ -1,19 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:lefon/models/audio_data.dart';
+import 'package:lefon/models/genre_data.dart';
+import '../screens/home_screen.dart';
 
-enum Counters { Name, Az, Featured, Category }
+enum Counters { Name, Az, Featured, Category, Genres }
 
 class BorderModel with ChangeNotifier {
   int counterName = 0;
   int counterAz = -1;
   int counterFeatured = -1;
   int counterCategory = -1;
+  int counterGenresW = -1;
+  int counterGenresA = -1;
+  int counterGenresC = -1;
 
   bool swipeNames = true;
   bool swipeAz = false;
   bool swipeFeatured = false;
   bool swipeCategory = false;
+  bool swipeGenres = false;
+
+  AudioPlayer voice = AudioPlayer();
+
+  playVoice(String url) async {
+    await voice.play(url);
+    notifyListeners();
+  }
+
+  pauseVoice() async {
+    await voice.pause();
+    notifyListeners();
+  }
 
   increaseCounter(Counters counter) {
+    pauseVoice();
     switch (counter) {
       case Counters.Name:
         counterName++;
@@ -21,21 +42,27 @@ class BorderModel with ChangeNotifier {
         break;
       case Counters.Az:
         counterAz++;
-        if (counterAz > 4) counterAz = -1;
+        if (counterAz > 10) counterAz = -1;
+        playVoice(audioData[counterAz].voiceUrl);
         break;
       case Counters.Featured:
         counterFeatured++;
-        if (counterFeatured > 4) counterFeatured = -1;
+        if (counterFeatured > 10) counterFeatured = -1;
+        playVoice(audioData[counterFeatured].voiceUrl);
         break;
       case Counters.Category:
         counterCategory++;
-        if (counterCategory > 4) counterCategory = -1;
+        if (counterCategory > 2) counterCategory = -1;
+        playVoice(genreData[counterCategory].voiceUrl);
+        break;
+      case Counters.Genres:
         break;
     }
     notifyListeners();
   }
 
   decreaseCounter(Counters counter) {
+    pauseVoice();
     switch (counter) {
       case Counters.Name:
         counterName--;
@@ -44,20 +71,26 @@ class BorderModel with ChangeNotifier {
       case Counters.Az:
         counterAz--;
         if (counterAz < 0) counterAz = -1;
+        playVoice(audioData[counterAz].voiceUrl);
         break;
       case Counters.Featured:
         counterFeatured--;
         if (counterFeatured < 0) counterFeatured = -1;
+        playVoice(audioData[counterFeatured].voiceUrl);
         break;
       case Counters.Category:
         counterCategory--;
         if (counterCategory < 0) counterCategory = -1;
+        playVoice(genreData[counterCategory].voiceUrl);
+        break;
+      case Counters.Genres:
         break;
     }
     notifyListeners();
   }
 
   resetCounter(Counters counter) {
+    pauseVoice();
     switch (counter) {
       case Counters.Name:
         counterName = 0;
@@ -70,6 +103,52 @@ class BorderModel with ChangeNotifier {
         break;
       case Counters.Category:
         counterCategory = -1;
+        break;
+      case Counters.Genres:
+        break;
+    }
+    notifyListeners();
+  }
+
+  increaseGenreCounter(genre) {
+    pauseVoice();
+    switch (genre) {
+      case Genre.World:
+        counterGenresW++;
+        if (counterGenresW > 5) counterGenresW = -1;
+        playVoice(audioData[counterGenresW].voiceUrl);
+        break;
+      case Genre.Azerbaijan:
+        counterGenresA++;
+        if (counterGenresA > 2) counterGenresA = -1;
+        playVoice(audioData[counterGenresA + 6].voiceUrl);
+        break;
+      case Genre.Children:
+        counterGenresC++;
+        if (counterGenresC > 1) counterGenresC = -1;
+        playVoice(audioData[counterGenresC + 9].voiceUrl);
+        break;
+    }
+    notifyListeners();
+  }
+
+  decreaseGenreCounter(Genre genre) {
+    pauseVoice();
+    switch (genre) {
+      case Genre.World:
+        counterGenresW--;
+        if (counterGenresW < 0) counterGenresW = -1;
+        playVoice(audioData[counterGenresW].voiceUrl);
+        break;
+      case Genre.Azerbaijan:
+        counterGenresA--;
+        if (counterGenresA < 0) counterGenresA = -1;
+        playVoice(audioData[counterGenresA + 6].voiceUrl);
+        break;
+      case Genre.Children:
+        counterGenresC--;
+        if (counterGenresC < 0) counterGenresC = -1;
+        playVoice(audioData[counterGenresC + 9].voiceUrl);
         break;
     }
     notifyListeners();
@@ -88,6 +167,8 @@ class BorderModel with ChangeNotifier {
         break;
       case Counters.Category:
         swipeCategory = swipe;
+        break;
+      case Counters.Genres:
         break;
     }
     notifyListeners();

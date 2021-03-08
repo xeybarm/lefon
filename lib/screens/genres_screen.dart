@@ -3,10 +3,9 @@ import 'package:lefon/models/audio_data.dart';
 import 'package:lefon/provider/border_model.dart';
 import 'package:lefon/widgets/genre_item.dart';
 import './home_screen.dart';
-import '../screens/player_screen.dart';
 import '../widgets/border_widget.dart';
 import 'package:provider/provider.dart';
-import '../provider/voice_model.dart';
+import '../screens/player_screen.dart';
 import '../models/genre_data.dart';
 
 class GenresScreen extends StatefulWidget {
@@ -16,9 +15,8 @@ class GenresScreen extends StatefulWidget {
 }
 
 class _GenresScreenState extends State<GenresScreen> {
-  int counterGenres = -1;
-  List<int> emptyIndeces = [];
-  bool left;
+  bool right;
+  bool down;
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +24,24 @@ class _GenresScreenState extends State<GenresScreen> {
         ModalRoute.of(context).settings.arguments as Map<String, Object>;
     final index = routeArgs['index'];
 
+    int counter;
+
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => VoiceModel()),
         ChangeNotifierProvider(create: (_) => BorderModel()),
       ],
       child: Scaffold(
         body: Consumer<BorderModel>(
-          builder: (context, border, child) => Consumer<VoiceModel>(
-            builder: (context, voice, child) => GestureDetector(
+          builder: (context, border, child) {
+            if (genreData[index].genre == Genre.World) {
+              counter = border.counterGenresW;
+            } else if (genreData[index].genre == Genre.Azerbaijan) {
+              counter = border.counterGenresA;
+            } else {
+              counter = border.counterGenresC;
+            }
+
+            return GestureDetector(
               behavior: HitTestBehavior.translucent,
               child: Container(
                 padding: EdgeInsets.only(top: 20),
@@ -43,8 +50,9 @@ class _GenresScreenState extends State<GenresScreen> {
                 child: Column(children: <Widget>[
                   text('${genreData[index].genre.toString().split('.').last}'),
                   Expanded(
-                    child: counterGenres == -1
+                    child: counter == -1
                         ? GridView.count(
+                            physics: NeverScrollableScrollPhysics(),
                             crossAxisCount: 2,
                             children: audioData.map((data) {
                               return data.genre == genreData[index].genre
@@ -57,11 +65,9 @@ class _GenresScreenState extends State<GenresScreen> {
                               ..removeWhere(
                                   (element) => element.runtimeType == SizedBox))
                         : GridView.count(
+                            physics: NeverScrollableScrollPhysics(),
                             crossAxisCount: 2,
                             children: audioData.map((data) {
-                              if (data.genre != genreData[index].genre) {
-                                emptyIndeces.add(data.id);
-                              }
                               return data.genre == genreData[index].genre
                                   ? BorderWidget(
                                       child: GenreItem(data: data),
@@ -69,36 +75,61 @@ class _GenresScreenState extends State<GenresScreen> {
                                     )
                                   : SizedBox();
                             }).toList()
-                              ..replaceRange(counterGenres, counterGenres + 1, [
-                                BorderWidget(
-                                    child: GenreItem(
-                                        data: audioData[counterGenres]),
-                                    isBordered: true)
-                              ])
                               ..removeWhere(
-                                  (element) => element.runtimeType == SizedBox),
-                          ),
+                                  (element) => element.runtimeType == SizedBox)
+                              ..replaceRange(
+                                  genreData[index].genre == Genre.World
+                                      ? border.counterGenresW
+                                      : genreData[index].genre ==
+                                              Genre.Azerbaijan
+                                          ? border.counterGenresA
+                                          : border.counterGenresC,
+                                  genreData[index].genre == Genre.World
+                                      ? border.counterGenresW + 1
+                                      : genreData[index].genre ==
+                                              Genre.Azerbaijan
+                                          ? border.counterGenresA + 1
+                                          : border.counterGenresC + 1,
+                                  [
+                                    BorderWidget(
+                                        child: GenreItem(
+                                            data: genreData[index].genre ==
+                                                    Genre.World
+                                                ? audioData[
+                                                    border.counterGenresW]
+                                                : genreData[index].genre ==
+                                                        Genre.Azerbaijan
+                                                    ? audioData[
+                                                        border.counterGenresA +
+                                                            6]
+                                                    : audioData[
+                                                        border.counterGenresC +
+                                                            9]),
+                                        isBordered: true)
+                                  ])),
                   ),
                 ]),
               ),
               onHorizontalDragUpdate: (swipe) {
-                if (swipe.delta.dx < 0)
-                  left = true;
-                else if (swipe.delta.dx > 0) left = false;
+                if (swipe.delta.dx > 0)
+                  right = true;
+                else if (swipe.delta.dx < 0) right = false;
               },
               onHorizontalDragEnd: (swipe) {
-                if (left) {
-                  setState(() {
-                    counterGenres++;
-
-                    if (emptyIndeces.contains(counterGenres)) counterGenres++;
-                    if (counterGenres > 3) counterGenres = -1;
-                  });
-                } else {
-                  setState(() {
-                    counterGenres--;
-                    if (counterGenres < 0) counterGenres = -1;
-                  });
+                if (right)
+                  border.increaseGenreCounter(genreData[index].genre);
+                else
+                  border.decreaseGenreCounter(genreData[index].genre);
+              },
+              onVerticalDragUpdate: (swipe) {
+                if (swipe.delta.dy < 0)
+                  down = false;
+                else
+                  down = true;
+              },
+              onVerticalDragEnd: (swipe) {
+                if (down) {
+                  Navigator.of(context).pushNamed(HomeScreen.routeName);
                 }
               },
               onDoubleTap: () {
@@ -106,21 +137,39 @@ class _GenresScreenState extends State<GenresScreen> {
                   MaterialPageRoute(
                       fullscreenDialog: true,
                       builder: (BuildContext context) {
-                        return PlayerScreen(
-                          title: audioData[counterGenres].title,
-                          author: audioData[counterGenres].author,
-                          cover: audioData[counterGenres].cover,
-                          url: audioData[counterGenres].url,
-                        );
+                        return genreData[index].genre == Genre.World
+                            ? PlayerScreen(
+                                title: audioData[border.counterGenresW].title,
+                                author: audioData[border.counterGenresW].author,
+                                cover: audioData[border.counterGenresW].cover,
+                                url: audioData[border.counterGenresW].audioUrl,
+                              )
+                            : genreData[index].genre == Genre.Azerbaijan
+                                ? PlayerScreen(
+                                    title: audioData[border.counterGenresA + 6]
+                                        .title,
+                                    author: audioData[border.counterGenresA + 6]
+                                        .author,
+                                    cover: audioData[border.counterGenresA + 6]
+                                        .cover,
+                                    url: audioData[border.counterGenresA + 6]
+                                        .audioUrl,
+                                  )
+                                : PlayerScreen(
+                                    title: audioData[border.counterGenresC + 9]
+                                        .title,
+                                    author: audioData[border.counterGenresC + 9]
+                                        .author,
+                                    cover: audioData[border.counterGenresC + 9]
+                                        .cover,
+                                    url: audioData[border.counterGenresC + 9]
+                                        .audioUrl,
+                                  );
                       }),
                 );
               },
-              onLongPress: () {
-                emptyIndeces = [];
-                Navigator.of(context).pushNamed(HomeScreen.routeName);
-              },
-            ),
-          ),
+            );
+          },
         ),
       ),
     );

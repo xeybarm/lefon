@@ -13,11 +13,10 @@ class GenreItem extends StatelessWidget {
           title: data.title,
           author: data.author,
           cover: data.cover,
-          url: data.url,
+          url: data.audioUrl,
           height: MediaQuery.of(context).size.height * 0.2,
           witdh: MediaQuery.of(context).size.width * 0.3,
           isShadow: false,
-          isClickable: true,
         ),
         Text(
           data.title,

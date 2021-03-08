@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../screens/genres_screen.dart';
-import 'package:lefon/screens/genres_screen.dart';
 import '../models/genre_data.dart';
 
 class CategoriesItem extends StatelessWidget {
@@ -34,10 +32,6 @@ class CategoriesItem extends StatelessWidget {
           ),
         ),
       ),
-      onTap: () {
-        Navigator.of(context)
-            .pushNamed(GenresScreen.routeName, arguments: {'index': index});
-      },
     );
   }
 }

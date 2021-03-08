@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:lefon/provider/border_model.dart';
-import 'package:lefon/provider/voice_model.dart';
+import '../models/voice_data.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:lefon/widgets/book_list.dart';
 import 'package:lefon/widgets/categories.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../screens/player_screen.dart';
-import '../models/audio_data.dart';
+import 'package:lefon/models/audio_data.dart';
 import '../provider/border_model.dart';
 import '../screens/genres_screen.dart';
 import '../widgets/border_widget.dart';
 
-enum Genre { Drama, Action, SciFi, Horror, Comedy }
+enum Genre { World, Azerbaijan, Children }
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/home-screen';
@@ -31,14 +32,26 @@ class _HomeScreenState extends State<HomeScreen> {
   Genre genre;
   DragStartDetails startSwipe;
   DragUpdateDetails updateSwipe;
-  bool left;
+  bool right;
+  bool down;
+
+  AudioPlayer initAudio = AudioPlayer();
+
+  init() async {
+    initAudio.play(voiceData[0]);
+  }
+
+  @override
+  void initState() {
+    init();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => VoiceModel()),
           ChangeNotifierProvider(create: (_) => BorderModel()),
         ],
         child: Consumer<BorderModel>(
@@ -101,22 +114,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           replaceIndex: null,
                         ),
                 ]),
-            onVerticalDragUpdate: (swipe) {
-              if (swipe.delta.dy < 0)
-                left = true;
-              else if (swipe.delta.dy > 0) left = false;
+            onHorizontalDragUpdate: (swipe) {
+              if (swipe.delta.dx > 0)
+                right = true;
+              else if (swipe.delta.dx < 0) right = false;
             },
-            onVerticalDragEnd: (swipe) {
-              if (left) {
-                if (border.swipeNames)
-                  border.decreaseCounter(Counters.Name);
-                else if (border.swipeAz)
-                  border.decreaseCounter(Counters.Az);
-                else if (border.swipeFeatured)
-                  border.decreaseCounter(Counters.Featured);
-                else if (border.swipeCategory)
-                  border.decreaseCounter(Counters.Category);
-              } else {
+            onHorizontalDragEnd: (swipe) {
+              initAudio.stop();
+              if (right) {
                 if (border.swipeNames)
                   border.increaseCounter(Counters.Name);
                 else if (border.swipeAz)
@@ -125,10 +130,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   border.increaseCounter(Counters.Featured);
                 else if (border.swipeCategory)
                   border.increaseCounter(Counters.Category);
+              } else {
+                if (border.swipeNames)
+                  border.decreaseCounter(Counters.Name);
+                else if (border.swipeAz)
+                  border.decreaseCounter(Counters.Az);
+                else if (border.swipeFeatured)
+                  border.decreaseCounter(Counters.Featured);
+                else if (border.swipeCategory)
+                  border.decreaseCounter(Counters.Category);
+              }
+            },
+            onVerticalDragUpdate: (swipe) {
+              initAudio.stop();
+              if (swipe.delta.dy < 0)
+                down = false;
+              else
+                down = true;
+            },
+            onVerticalDragEnd: (swipe) {
+              if (down) {
+                border.resetCounter(Counters.Az);
+                border.resetCounter(Counters.Name);
+                border.resetCounter(Counters.Featured);
+                border.resetCounter(Counters.Category);
+                border.setSwipes(Counters.Name, true);
               }
             },
             onDoubleTap: () {
-              print("double tap");
+              border.pauseVoice();
               if (border.counterAz > -1) {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -138,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: audioData[border.counterAz].title,
                         author: audioData[border.counterAz].author,
                         cover: audioData[border.counterAz].cover,
-                        url: audioData[border.counterAz].url,
+                        url: audioData[border.counterAz].audioUrl,
                       );
                     },
                   ),
@@ -151,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: audioData[border.counterFeatured].title,
                         author: audioData[border.counterFeatured].author,
                         cover: audioData[border.counterFeatured].cover,
-                        url: audioData[border.counterFeatured].url,
+                        url: audioData[border.counterFeatured].audioUrl,
                       );
                     }));
               } else if (border.counterCategory > -1) {
@@ -164,31 +194,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     border.setSwipes(Counters.Az, true);
                     border.setSwipes(Counters.Featured, false);
                     border.setSwipes(Counters.Category, false);
+                    border.playVoice(voiceData[1]);
                     break;
                   case 2:
                     border.setSwipes(Counters.Name, false);
                     border.setSwipes(Counters.Featured, true);
                     border.setSwipes(Counters.Az, false);
                     border.setSwipes(Counters.Category, false);
+                    border.playVoice(voiceData[1]);
                     break;
                   case 3:
                     border.setSwipes(Counters.Name, false);
                     border.setSwipes(Counters.Category, true);
                     border.setSwipes(Counters.Az, false);
                     border.setSwipes(Counters.Featured, false);
+                    border.playVoice(voiceData[0]);
                     break;
                   default:
                     break;
                 }
               }
-            },
-            onLongPress: () {
-              print("long tap");
-              border.resetCounter(Counters.Az);
-              border.resetCounter(Counters.Name);
-              border.resetCounter(Counters.Featured);
-              border.resetCounter(Counters.Category);
-              border.setSwipes(Counters.Name, true);
             },
           ),
         ),

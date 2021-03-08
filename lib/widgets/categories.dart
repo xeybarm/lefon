@@ -13,20 +13,22 @@ class Categories extends StatelessWidget {
         height: MediaQuery.of(context).size.height * 0.1,
         child: replaceIndex == null
             ? ListView(
+                physics: NeverScrollableScrollPhysics(),
                 scrollDirection: Axis.horizontal,
-                children: List.generate(5, (int index) {
+                children: List.generate(3, (int index) {
                   return CategoriesItem(index: index);
                 }),
               )
             : ListView(
+                physics: NeverScrollableScrollPhysics(),
                 scrollDirection: Axis.horizontal,
-                children: List.generate(5, (int index) {
+                children: List.generate(3, (int index) {
                   return BorderWidget(
                     child: CategoriesItem(index: index),
                     isBordered: false,
                   );
                 })
-                  ..replaceRange(replaceIndex, replaceIndex + 1, [
+                  ..replaceRange(0, replaceIndex + 1, [
                     BorderWidget(
                         child: CategoriesItem(
                           index: replaceIndex,

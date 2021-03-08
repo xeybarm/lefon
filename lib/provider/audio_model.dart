@@ -8,6 +8,7 @@ class AudioModel with ChangeNotifier {
   }
 
   AudioPlayer audio = AudioPlayer();
+
   Duration totalDuration = Duration(hours: 0, minutes: 0, seconds: 0);
   Duration currentDuration = Duration(hours: 0, minutes: 0, seconds: 0);
 
@@ -25,35 +26,35 @@ class AudioModel with ChangeNotifier {
     });
   }
 
-  playAudio(String url) {
+  playAudio(String url) async {
     isOn = true;
+    await audio.play(url);
     notifyListeners();
-    audio.play(url);
   }
 
-  pauseAudio() {
+  pauseAudio() async {
     isOn = false;
+    await audio.pause();
     notifyListeners();
-    audio.pause();
   }
 
-  stopAudio() {
+  stopAudio() async {
     isOn = false;
+    await audio.stop();
     notifyListeners();
-    audio.stop();
   }
 
   seekAudio(Duration duration) {
     audio.seek(duration);
   }
 
-  forward10Sec(Duration duration) {
-    currentDuration = duration + Duration(seconds: 10);
+  forward5Sec(Duration duration) {
+    currentDuration = duration + Duration(seconds: 5);
     audio.seek(currentDuration);
   }
 
-  reverse10Sec(Duration duration) {
-    currentDuration = duration - Duration(seconds: 10);
+  reverse5Sec(Duration duration) {
+    currentDuration = duration - Duration(seconds: 5);
     audio.seek(currentDuration);
   }
 }

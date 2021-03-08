@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lefon/widgets/audio_cover.dart';
 import 'dart:ui';
-import '../models/audio_data.dart';
+import 'package:lefon/models/audio_data.dart';
 
 class BookListItem extends StatelessWidget {
   final int index;
@@ -18,11 +18,10 @@ class BookListItem extends StatelessWidget {
           title: audioData[index].title,
           author: audioData[index].author,
           cover: audioData[index].cover,
-          url: audioData[index].url,
+          url: audioData[index].audioUrl,
           height: height,
           witdh: MediaQuery.of(context).size.height * 0.17,
           isShadow: isShadow,
-          isClickable: true,
         ),
         Padding(
           padding: const EdgeInsets.only(top: 10.0),

@@ -60,7 +60,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 if (audio.isOn) {
                   audio.pauseAudio();
                 } else {
-                  audio.playAudio(widget.url);
+                  audio.resumeAudio();
                 }
               },
               onVerticalDragUpdate: (swipe) {
@@ -69,6 +69,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 else if (swipe.delta.dy < 0) down = false;
               },
               onVerticalDragEnd: (swipe) {
+                print("down: $down");
                 if (down) closePlayer(context, audio);
               },
               onDoubleTap: () {

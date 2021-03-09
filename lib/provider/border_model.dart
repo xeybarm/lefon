@@ -1,3 +1,4 @@
+import 'package:audioplayers/audio_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:lefon/models/audio_data.dart';
@@ -22,14 +23,15 @@ class BorderModel with ChangeNotifier {
   bool swipeGenres = false;
 
   AudioPlayer voice = AudioPlayer();
+  AudioCache voiceCache = AudioCache();
 
   playVoice(String url) async {
-    await voice.play(url);
+    voice = await voiceCache.play(url);
     notifyListeners();
   }
 
-  pauseVoice() async {
-    await voice.pause();
+  pauseVoice() {
+    voice?.pause();
     notifyListeners();
   }
 

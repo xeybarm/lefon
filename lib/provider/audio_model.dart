@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:audioplayers/audio_cache.dart';
 
 class AudioModel with ChangeNotifier {
   bool isOn = true;
@@ -8,39 +9,51 @@ class AudioModel with ChangeNotifier {
   }
 
   AudioPlayer audio = AudioPlayer();
+  AudioCache audioCache = AudioCache();
 
   Duration totalDuration = Duration(hours: 0, minutes: 0, seconds: 0);
   Duration currentDuration = Duration(hours: 0, minutes: 0, seconds: 0);
 
-  initAudio(String url) {
-    audio.play(url);
+  initAudio(String url) async {
+    audioCache.play("sounds/tutorial/forward_tutorial.mp3");
+    Future.delayed(const Duration(seconds: 7), () async {
+      audioCache.play("sounds/tutorial/pause_tutorial.mp3");
+      Future.delayed(const Duration(seconds: 3), () async {
+        audio = await audioCache.play(url);
 
-    audio.onDurationChanged.listen((remainingDuration) {
-      totalDuration = remainingDuration;
-      notifyListeners();
-    });
+        audio.onDurationChanged.listen((remainingDuration) {
+          totalDuration = remainingDuration;
+          notifyListeners();
+        });
 
-    audio.onAudioPositionChanged.listen((updatedPosition) {
-      currentDuration = updatedPosition;
-      notifyListeners();
+        audio.onAudioPositionChanged.listen((updatedPosition) {
+          currentDuration = updatedPosition;
+          notifyListeners();
+        });
+      });
     });
   }
 
   playAudio(String url) async {
     isOn = true;
-    await audio.play(url);
+    audio = await audioCache.play(url);
     notifyListeners();
   }
 
-  pauseAudio() async {
+  pauseAudio() {
     isOn = false;
-    await audio.pause();
+    audio.pause();
     notifyListeners();
   }
 
-  stopAudio() async {
-    isOn = false;
-    await audio.stop();
+  resumeAudio() {
+    isOn = true;
+    audio.resume();
+    notifyListeners();
+  }
+
+  stopAudio() {
+    audio.stop();
     notifyListeners();
   }
 

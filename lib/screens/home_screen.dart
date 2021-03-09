@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lefon/provider/border_model.dart';
-import '../models/voice_data.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:lefon/widgets/book_list.dart';
 import 'package:lefon/widgets/categories.dart';
 import 'package:provider/provider.dart';
+import 'package:audioplayers/audio_cache.dart';
 import 'dart:ui';
 import '../screens/player_screen.dart';
 import 'package:lefon/models/audio_data.dart';
@@ -36,9 +36,16 @@ class _HomeScreenState extends State<HomeScreen> {
   bool down;
 
   AudioPlayer initAudio = AudioPlayer();
+  AudioCache initCache = AudioCache();
 
   init() async {
-    initAudio.play(voiceData[0]);
+    initAudio = await initCache.play("sounds/tutorial/category_tutorial.mp3");
+    // if (Platform.isIOS) {
+    //   if (audioCache.fixedPlayer != null) {
+    //     audioCache.fixedPlayer.startHeadlessService();
+    //   }
+    //   initAudio.startHeadlessService();
+    // }
   }
 
   @override
@@ -121,6 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             onHorizontalDragEnd: (swipe) {
               initAudio.stop();
+              border.pauseVoice();
               if (right) {
                 if (border.swipeNames)
                   border.increaseCounter(Counters.Name);
@@ -149,6 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 down = true;
             },
             onVerticalDragEnd: (swipe) {
+              border.pauseVoice();
               if (down) {
                 border.resetCounter(Counters.Az);
                 border.resetCounter(Counters.Name);
@@ -194,21 +203,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     border.setSwipes(Counters.Az, true);
                     border.setSwipes(Counters.Featured, false);
                     border.setSwipes(Counters.Category, false);
-                    border.playVoice(voiceData[1]);
+                    border.playVoice("sounds/tutorial/book_tutorial.mp3");
                     break;
                   case 2:
                     border.setSwipes(Counters.Name, false);
                     border.setSwipes(Counters.Featured, true);
                     border.setSwipes(Counters.Az, false);
                     border.setSwipes(Counters.Category, false);
-                    border.playVoice(voiceData[1]);
+                    border.playVoice("sounds/tutorial/book_tutorial.mp3");
                     break;
                   case 3:
                     border.setSwipes(Counters.Name, false);
                     border.setSwipes(Counters.Category, true);
                     border.setSwipes(Counters.Az, false);
                     border.setSwipes(Counters.Featured, false);
-                    border.playVoice(voiceData[0]);
+                    border.playVoice("sounds/tutorial/category_tutorial.mp3");
                     break;
                   default:
                     break;

@@ -128,6 +128,7 @@ class _GenresScreenState extends State<GenresScreen> {
                   down = true;
               },
               onVerticalDragEnd: (swipe) {
+                border.pauseVoice();
                 if (down) {
                   Navigator.of(context).pushNamed(HomeScreen.routeName);
                 }

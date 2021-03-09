@@ -12,16 +12,13 @@ List<GenreData> genreData = [
   GenreData(
       id: 0,
       genre: Genre.World,
-      voiceUrl:
-          "http://docs.google.com/uc?export=open&id=17ymp_mHFZVP49UtxtZrJB9hAIb0ZEIFE"),
+      voiceUrl: "sounds/menu_items/world_category.mp3"),
   GenreData(
       id: 1,
       genre: Genre.Azerbaijan,
-      voiceUrl:
-          "http://docs.google.com/uc?export=open&id=1kViU7iOCJlPUNqTbykxZftPG9-dLn5-l"),
+      voiceUrl: "sounds/menu_items/azerbaijani_category.mp3"),
   GenreData(
       id: 2,
       genre: Genre.Children,
-      voiceUrl:
-          "http://docs.google.com/uc?export=open&id=1U2rtRHdB3xRYNC7rHp9iB88Q9JFuhJmi")
+      voiceUrl: "sounds/menu_items/child_category.mp3")
 ];
